@@ -1,0 +1,28 @@
+body {
+    /*padding: 0;*/
+    /*margin: 0;*/
+}
+.body-iframe {
+    width: 600px !important;
+    height: 100% !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 99999;
+}
+.container-iframe {
+    width: 100%;
+    height: 100%;
+    background: #cdcdcdf0;
+    border-radius: 7px;
+}
+.content-header {
+
+}
+.content-list {
+
+}
+.content-footer {
+
+}

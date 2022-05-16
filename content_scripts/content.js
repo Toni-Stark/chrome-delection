@@ -1,15 +1,14 @@
-import {createBreadCrumbs, getSearch, UrlDecode, createDom} from "../static/js/common";
-
 const initState = {
     modalState: true,
 }
 
 const init = () => {
+    console.log(window.location.href.match(/bing.com/))
     if(window.location.href.match(/bing.com/)) {
         let iframe = document.getElementById("home-iframe");
         if(iframe === null && window.self === window.top) {
+            // setIframeWindow({init: true});
             setEmbeddedIframe(initState.modalState);
-            setIframeWindow({init: true});
         }
     } else {
         let iframe = document.getElementById("body-iframe");
@@ -35,6 +34,80 @@ const setUpload = () => {
         context.appendChild(submitTab);
         body[0].appendChild(context)
     })
+}
+
+/**
+ *  author: Gerric
+ *  对象值转面包屑
+ */
+const createBreadCrumbs = (obj) => {
+    let str = "";
+    if (obj) {
+        Object.keys(obj).reverse().map((item, index) => {
+            str = `${obj[item]}${index>0?" / ":" "}${str}`;
+        })
+    }
+    return str;
+}
+
+/**
+ *  author: Gerric
+ *  UrlDecode解码
+ */
+const UrlDecode = (zipStr) => {
+    let uzipStr="";
+    for(let i=0;i<zipStr.length;i++){
+        let chr = zipStr.charAt(i);
+        if(chr === "+"){
+            uzipStr+=" ";
+        }else if(chr==="%"){
+            let asc = zipStr.substring(i+1,i+3);
+            if(parseInt("0x"+asc)>0x7f){
+                uzipStr+=decodeURI("%"+asc.toString()+zipStr.substring(i+3,i+9).toString());
+                i+=8;
+            }else{
+                uzipStr+=AsciiToString(parseInt("0x"+asc));
+                i+=2;
+            }
+        }else{
+            uzipStr+= chr;
+        }
+    }
+
+    return uzipStr;
+}
+
+/**
+ *  author: Gerric
+ *  UrlSearch格式化
+ */
+const getSearch = (search) => {
+    let obj = {};
+    if (search) {
+        let list = search.slice(1, search.length-1).split("&");
+        for (let i = 0; i < list.length; i ++) {
+            let item = list[i].split("=");
+            obj[item[0]] = UrlDecode(item[1]);
+        }
+    }
+    return obj;
+}
+
+
+/**
+ *  author: Gerric
+ *  Dom工作器
+ */
+const createDom = ({dom, className, style, text}) => {
+    const content = document.createElement(dom);
+    content.className = className;
+    if (style) {
+        content.setAttribute("style", style);
+    }
+    if (text) {
+        content.textContent = text;
+    }
+    return content
 }
 
 /**
@@ -148,17 +221,6 @@ const createCardItem = () => {
     return list
 }
 
-/**
- * 设置抽屉隐藏
- */
-const setCloseModal = (body) => {
-    body.addEventListener("click", () => {
-        initState.modalState = false;
-        container.style.left = "-600px";
-        setEmbeddedIframe(initState.modalState);
-    })
-}
-
 const setFormLabel = () => {
     let body = document.getElementById("home-iframe").contentWindow.document;
 
@@ -196,7 +258,11 @@ const setFormLabel = () => {
     container.addEventListener("click", (event) => {
         event.stopPropagation();
     })
-    setCloseModal(body);
+    body.addEventListener("click", () => {
+        initState.modalState = false;
+        container.style.left = "-600px";
+        setEmbeddedIframe(initState.modalState);
+    })
 };
 
 /**

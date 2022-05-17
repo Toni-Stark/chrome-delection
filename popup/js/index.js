@@ -1,19 +1,12 @@
-let changeColor = document.getElementById("changeColor");
-
-chrome.storage.sync.get("color", ({ color }) => {
-    changeColor.style.backgroundColor = color;
-});
-
-changeColor.addEventListener("click", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: setPageBackgroundColor,
-    })
-})
-
-function setPageBackgroundColor () {
-    chrome.storage.sync.get("color", ({ color }) => {
-        document.body.style.backgroundColor = color;
-    })
-}
+// 弹窗按钮需求搁置：消息通知content_script打开弹窗；
+// document.addEventListener('DOMContentLoaded', (e) => {
+//     let btn = document.getElementsByClassName("popup-style")[0];
+//     btn.addEventListener("click", async (e) => {
+//         console.log("打开抽屉");
+//         let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+//
+//         chrome.tabs.sendMessage(tab.id, {type: "getText"}, function (response) {
+//             console.log("popup:", response)
+//         })
+//     })
+// })

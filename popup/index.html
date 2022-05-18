@@ -1,12 +1,53 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="./css/button.css">
-    </head>
-    <body>
-        <!--弹窗控制按钮取消-->
-        <!--<div class="popup-style">打开列表</div>-->
-        <script src="./js/index.js"></script>
-    </body>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>核验工具</title>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/index.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid" style="padding: 0;">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="panel panel-default wrap_login">
+        <div class="panel-body">
+            <p class="h4">
+                请先在 <span class="btn btn-link login" style="font-size: 18px;padding: 0;">www.corp.360zhishu.cn</span>中登录或
+            </p>
+            <p class="h4">
+                找内部管理员开通账号
+            </p>
+            <p>
+                <button class="btn btn-success btn-block login">登录</button>
+            </p>
+        </div>
+    </div>
+    <div class="panel panel-default wrap_profile">
+        <div class="panel-heading">
+            <h3 class="panel-title">快捷入口</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li class="list-group-item scrm">
+                    <span class="btn btn-link">SCRM系统</span>
+                </li>
+                <li class="list-group-item icp">
+                    <span class="btn btn-link">ICP核查系统</span>
+                </li>
+                <li class="list-group-item setting">
+                    <span class="btn btn-link">扩展快捷键设置</span>
+                </li>
+                <li class="list-group-item extend_list">
+                    <span class="btn btn-link">扩展列表</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+<script src="../static/js/jquery-3.2.1.min.js"></script>
+<script src="../static/js/common.js"></script>
+<script src="./js/index.js"></script>
+</body>
 </html>

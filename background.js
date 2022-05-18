@@ -1,19 +1,43 @@
-const getCurrentTabId = (callback) => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        if(callback) callback(tabs.length ? tabs[0].id: null);
-    });
-}
+importScripts('/static/js/common.js');
+icp_tools_common_ops.init();//初始化，保证所有页面都一致
 
-const sendMessageToContentScript = (message, callback) => {
-    getCurrentTabId((tabId) => {
-        console.log("获取当前页面的tabId, 并且发送给contentScript", tabId)
-        chrome.tabs.sendMessage(tabId, message, function(response) {
-            if(callback) callback(response);
-        });
-    });
-}
-setTimeout(() => {
-    sendMessageToContentScript('你好，我是background！', (response) => {
-        if(response) alert('收到来自content-script的回复：'+response);
-    });
-}, 3000)
+chrome.runtime.onMessage.addListener(
+    function(response, sender, sendResponse) {
+        if (response?.type === "submit") {
+            Submit({url:sender.origin, title: sender.tab.title}, sender.tab.id, sendResponse)
+            return true
+        }
+    }
+);
+const Submit = function ( data, tab_id, sendResponse) {
+    chrome.cookies.get({name: icp_tools_common_ops.getTokenName(), url: icp_tools_common_ops.buildUrl("/")}, (function (a) {
+        if (a && a.value) {//已登录~~
+            let url = icp_tools_common_ops.buildUrl( "/icp/keyword/lib-check"  );
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: a.value
+                },
+                body: JSON.stringify(data),
+            }).then((res) => {
+                if( res.status === 200 ){
+                    sendResponse(sendNotice( "提交成功",res.msg,tab_id ));
+                }else{
+                    sendResponse(sendNotice("提交失败","失败原因：" + res.msg,tab_id));
+                }
+            }).catch((err) => {
+                window.confirm(" 提交失败 ,请咨询开发者 ：" + icp_tools_common_ops.buildUrl("/") );
+            })
+        }else{//未登录~~
+            window.confirm( '请先登录 内部系统\r\n登录地址：' + icp_tools_common_ops.buildUrl("/") );
+            chrome.script.create({url:  icp_tools_common_ops.buildUrl("/") });
+        }
+    }));
+};
+
+const sendNotice = function (title,message,tab_id, tip_class = undefined) {
+    let data = { "act":"msg_alert",data:{ "msg":message ? (title + "：" + message) : title } };
+    if( tab_id !== undefined && tab_id > 0 ){
+        return {tab_id,data}
+    }
+};

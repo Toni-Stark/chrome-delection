@@ -17,10 +17,21 @@ const sendDataForServer = (e) => {
     console.log("log---------");
 }
 
-const submit = (e) => {
-    console.log("log---------");
-    alert("提交失败")
-    console.log("log---------");
+// 获取需要提交的数据
+const getDomainName = () => {
+    let data = {};
+    data.url = window.location.href;
+    data.title = document.title;
+    data.type = "submit";
+    return data;
+}
+
+const submit = async (e) => {
+    chrome.runtime.sendMessage(getDomainName()).then((res) => {
+        if (res?.tab_id && res.tab_id > 0) {
+            alert(res.data.data.msg);
+        }
+    });
 }
 
 const setUpload = () => {
@@ -28,10 +39,10 @@ const setUpload = () => {
         let iframe = document.getElementById("body-iframe").contentWindow.document;
         let body = iframe.getElementsByTagName("body");
         let context = createDom({dom: "div", className: "container-modal"});
-        let reportTab = createDom({dom: "div", className: "fix-btn-iframe", text: "举报", style: "background: #fb1d1d", onClick: submit})
-        let submitTab = createDom({dom: "div", className: "fix-btn-iframe", text: "记录", style: "background: #07b52c", onClick: sendDataForServer})
+        let reportTab = createDom({dom: "div", className: "fix-btn-iframe", text: "提交", style: "background: #07b52c", onClick: submit})
+        // let submitTab = createDom({dom: "div", className: "fix-btn-iframe", text: "记录", style: "background: #fb1d1d", onClick: sendDataForServer})
         context.appendChild(reportTab);
-        context.appendChild(submitTab);
+        // context.appendChild(submitTab);
         body[0].appendChild(context)
     })
 }
@@ -54,28 +65,28 @@ const setUpload = () => {
  *  author: Gerric
  *  UrlDecode解码
  */
-const UrlDecode = (zipStr) => {
-    let uzipStr="";
-    for(let i=0;i<zipStr.length;i++){
-        let chr = zipStr.charAt(i);
-        if(chr === "+"){
-            uzipStr+=" ";
-        }else if(chr==="%"){
-            let asc = zipStr.substring(i+1,i+3);
-            if(parseInt("0x"+asc)>0x7f){
-                uzipStr+=decodeURI("%"+asc.toString()+zipStr.substring(i+3,i+9).toString());
-                i+=8;
-            }else{
-                uzipStr+=AsciiToString(parseInt("0x"+asc));
-                i+=2;
-            }
-        }else{
-            uzipStr+= chr;
-        }
-    }
-
-    return uzipStr;
-}
+// const UrlDecode = (zipStr) => {
+//     let uzipStr="";
+//     for(let i=0;i<zipStr.length;i++){
+//         let chr = zipStr.charAt(i);
+//         if(chr === "+"){
+//             uzipStr+=" ";
+//         }else if(chr==="%"){
+//             let asc = zipStr.substring(i+1,i+3);
+//             if(parseInt("0x"+asc)>0x7f){
+//                 uzipStr+=decodeURI("%"+asc.toString()+zipStr.substring(i+3,i+9).toString());
+//                 i+=8;
+//             }else{
+//                 uzipStr+=AsciiToString(parseInt("0x"+asc));
+//                 i+=2;
+//             }
+//         }else{
+//             uzipStr+= chr;
+//         }
+//     }
+//
+//     return uzipStr;
+// }
 
 /**
  *  author: Gerric
@@ -128,9 +139,13 @@ const setIframeWindow = ({init}) => {
     iframe.src = window.location.href;
     document.body.parentNode.style.overflowY= "hidden";
     document.body.parentNode.style.overflowX= "hidden";
-    document.querySelectorAll("body")[0].setAttribute("style", "display: none !importent");
+    document.querySelectorAll("body")[0].setAttribute("style", "display: none !important");
     // document.querySelectorAll("html")[0].removeChild(document.querySelectorAll("body")[0]);
+    let start = document.createComment("<!--detection_start-->");
+    let end = document.createComment("<!--detection_end-->");
+    document.querySelectorAll("html")[0].appendChild(start);
     document.querySelectorAll("html")[0].appendChild(iframe);
+    document.querySelectorAll("html")[0].appendChild(end);
 
     if (init) {
         setTimeout(() => {
@@ -145,16 +160,12 @@ const setIframeWindow = ({init}) => {
 
 const listenLinkHref = () => {
     document.getElementById("body-iframe").addEventListener("load", function(event) {
-        let iframe = document.getElementById("body-iframe").contentWindow.document.getElementsByClassName("b_algo")
-
-        for (let i = 0; i < iframe.length; i++) {
-            let link = iframe[i].getElementsByTagName("a");
-            for (let j = 0; j < link.length; j++) {
-                if (link[j].target === "_blank" && link[j].href.match(/msg/) === null) {
-                    link[j].href = setLinkHref({link: link[j].href, data_type: "1", msg: "从扩展跳转"});
-                }
-            }
-        }
+        let b_algo = document.getElementById("body-iframe").contentWindow.document.getElementsByClassName("b_algo")
+        let b_ad = document.getElementById("body-iframe").contentWindow.document.getElementsByClassName("b_ad")
+        let na_ccw = document.getElementById("body-iframe").contentWindow.document.getElementsByClassName("na_ccw")
+        hrefIncremental(b_algo);
+        hrefIncremental(b_ad);
+        hrefIncremental(na_ccw);
         // 弹窗列表需求搁置：双击打开弹窗
         // let a = 0;
         // document.onkeydown = function (e) {
@@ -180,6 +191,20 @@ const setLinkHref = (props) => {
         url += "#msg=" + msg
     }
     return url;
+}
+
+const hrefIncremental = (iframe) => {
+    for (let i = 0; i < iframe.length; i++) {
+        let link = iframe[i].getElementsByTagName("a");
+        for (let j = 0; j < link.length; j++) {
+            if ( link[j].href.match(/msg/) === null) {
+                link[j].href = setLinkHref({link: link[j].href, data_type: "1", msg: "从扩展跳转"});
+                if (!link[j]?.target || link[j].target !== "_blank") {
+                    link[j].target = "_blank";
+                }
+            }
+        }
+    }
 }
 
 const closeModal = () => {
@@ -286,9 +311,9 @@ $(document).ready(function () {
     init()
 });
 
-setTimeout(function(){
-    init();
-},3000);
+// setTimeout(function(){
+//     init();
+// },3000);
 
 // 弹窗列表需求搁置：功能按钮打开弹窗
 // chrome.runtime.onMessage.addListener(

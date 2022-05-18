@@ -25,13 +25,20 @@ const getDomainName = () => {
     data.type = "submit";
     return data;
 }
-
+let timer = true;
 const submit = async (e) => {
-    chrome.runtime.sendMessage(getDomainName()).then((res) => {
-        if (res?.tab_id && res.tab_id > 0) {
-            alert(res.data.data.msg);
-        }
-    });
+    if (timer) {
+        timer = false;
+        e.style.backgroundColor = "#07b52c96"
+        chrome.runtime.sendMessage(getDomainName()).then((res) => {
+            if (res?.tab_id && res.tab_id > 0) {
+                timer = true;
+                e.style.backgroundColor = "#07b52c"
+                alert(res.data.data.msg);
+            }
+        });
+    }
+
 }
 
 const setUpload = () => {

@@ -1,3 +1,4 @@
+import("../static/js/common");
 const init = () => {
     let iframe = document.getElementById("body-iframe");
     if(iframe === null && window.self === window.top){
@@ -34,7 +35,7 @@ const submit = async (e) => {
             if (res?.tab_id && res.tab_id > 0) {
                 timer = true;
                 e.style.backgroundColor = "#07b52c"
-                alert(res.data.data.msg);
+                messageTip(res.data.data.msg, "success")
             }
         });
     }
@@ -79,6 +80,7 @@ const createDom = ({dom, className, style, text, onClick}) => {
  * init: 判断是否从检索页进入详情， 如果是则修改超链接
  */
 const setIframeWindow = ({init}) => {
+
     let iframe = document.createElement("iframe");
     iframe.frameborder = "0";
     iframe.className = "body-iframe";
@@ -99,12 +101,89 @@ const setIframeWindow = ({init}) => {
     if (init) {
         setTimeout(() => {
             listenLinkHref()
+            uploadListGet()
         }, 200)
     } else {
         setTimeout(() => {
             setUpload()
         }, 200)
     }
+}
+
+const uploadListGet = () => {
+    document.getElementById("body-iframe").addEventListener("load", function(event) {
+        chrome.storage.sync.get(icp_tools_common_ops.flag_pop_auto_upload, (data) => {
+            let {pop_auto_upload_flag} = data
+            if (pop_auto_upload_flag === "1") {
+                uploadListData()
+            }
+        })
+    })
+}
+
+const uploadListData = () => {
+    let body = document.getElementById("body-iframe").contentWindow.document;
+    let bAlgoList = body.getElementsByClassName("b_algo");
+    let data = [];
+    for (let i = 0; i < bAlgoList.length; i ++) {
+        let a = bAlgoList[i].querySelector("h2>a");
+        let obj = {};
+        obj.title = a.textContent;
+        if (a.href && a.href.match(/msg/) !== null) {
+            obj.url = a.href.split('#data_type')[0];
+        } else {
+            obj.url = a.href;
+        }
+        data.push(obj);
+    }
+    chrome.runtime.sendMessage({type: "upload", data}).then((res) => {
+        messageTip(res, "success");
+        // 跳转到下一页；
+        hrefToNextPage()
+    });
+}
+
+const hrefToNextPage = () => {
+    let body = document.getElementById("body-iframe").contentWindow.document;
+    let nextHref = body.getElementsByClassName("sb_pagN")[0];
+    chrome.storage.sync.get("currentPage", (data) => {
+        console.log(data);
+        if (data.currentPage) {
+            console.log(data.currentPage);
+            // chrome.storage.sync.set({"currentPage": null}, (data) => {
+            // })
+            if(parseInt(data.currentPage) >= 4){
+                chrome.storage.sync.set({"currentPage": 0}, (data) => {
+                    console.log("上传完毕");
+                })
+            } else {
+                chrome.storage.sync.set({"currentPage": parseInt(data.currentPage)+1}, (data) => {
+                    nextHref.click();
+                })
+            }
+        } else {
+            chrome.storage.sync.set({"currentPage": "1"}, (data) => {
+                nextHref.click();
+            })
+        }
+    })
+}
+
+let timerTip = null;
+const messageTip = (message, type, time = 2000) => {
+    clearTimeout(timerTip);
+    timerTip = setTimeout(() => {
+        let html = document.getElementById("body-iframe").contentWindow.document;
+        let tipCard = createDom({dom: "div", className: `messageTip ${type}`, text: message, style: styles.tip});
+        let body = html.querySelector("body");
+        body.appendChild(tipCard);
+        setTimeout(() => {
+            tipCard.style.opacity = "0";
+            setTimeout(()=> {
+                tipCard.style.display = "none";
+            }, 2000)
+        }, time)
+    }, 5000)
 }
 
 const listenLinkHref = () => {
@@ -159,5 +238,28 @@ const closeModal = () => {
  * 页面开启逻辑
  */
 $(document).ready(function () {
-    init()
+    icp_tools_common_ops.init();
+    setTimeout(()=> {
+        init()
+    }, 2000)
 });
+
+const styles = {
+    tip:
+        "width: 300px;"+
+        "position: fixed;"+
+        "top: 40px;"+
+        "transition:margin-top 2s;"+
+        "left: 50%;"+
+        "margin-left: -150px;"+
+        "z-index: 10000;"+
+        "height: 50px;"+
+        "font-size: 16px;"+
+        "box-sizing: border-box;"+
+        "text-align: center;"+
+        "border-radius: 7px;"+
+        "line-height: 50px;"+
+        "box-shadow: 2px 2px 5px 0px #919191;"+
+        "color: black;"+
+        "font-weight: 700;"
+}

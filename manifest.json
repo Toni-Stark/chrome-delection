@@ -52,9 +52,6 @@
     "declarativeNetRequest",
     "declarativeNetRequestFeedback"
   ],
-  "optional_permissions": [
-    "unlimitedStorage"
-  ],
   "host_permissions": [
     "http://www.dev.cms.cn",
     "http://www.corp.360zhishu.cn",

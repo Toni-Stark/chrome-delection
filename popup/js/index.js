@@ -18,10 +18,14 @@ let index_ops = {
             that.openUrl( buildUrl("/icp") );
         });
 
+        $(".wrap_profile .setting").click(function(){
+            chrome.runtime.openOptionsPage();
+            window.close();
+        });
+
         $(".wrap_profile .extend_list").click(function(){
             that.openUrl( "chrome://extensions/" );
         });
-
     },
     checkLogin:function(){
         let that = this;
@@ -41,7 +45,7 @@ let index_ops = {
     }
 };
 const buildUrl = (path, params) => {
-    let host = index_ops.getHost();
+    let host = icp_tools_common_ops.getHost();
     let url = host + path;
     let _paramUrl = '';
     if (params) {

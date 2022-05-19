@@ -1,6 +1,7 @@
 let icp_tools_common_ops = {
     init: function () {
         this.env = "dev";//当前环境，dev（本地开发环境） | inner (内部环境) | prod (生产环境)
+        this.flag_pop_auto_upload = "pop_auto_upload_flag"
     },
     getHost:function(){
         let host_map = {

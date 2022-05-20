@@ -123,35 +123,41 @@ const uploadListGet = () => {
 
 const uploadListData = () => {
     let body = document.getElementById("body-iframe").contentWindow.document;
-    let bAlgoList = body.getElementsByClassName("b_algo");
-    let data = [];
-    for (let i = 0; i < bAlgoList.length; i ++) {
-        let a = bAlgoList[i].querySelector("h2>a");
-        let obj = {};
-        obj.title = a.textContent;
-        if (a.href && a.href.match(/msg/) !== null) {
-            obj.url = a.href.split('#data_type')[0];
-        } else {
-            obj.url = a.href;
+    let bResults = body.getElementById("b_results");
+    if(bResults){
+        let bAlgoList = body.getElementsByClassName("b_algo");
+        let sbForm= body.getElementById("sb_form_q");
+        let data = [];
+        for (let i = 0; i < bAlgoList.length; i ++) {
+            let a = bAlgoList[i].querySelector("a");
+            if (a) {
+                let obj = {};
+                obj.title = a.textContent;
+                if (a.href && a.href.match(/msg/) !== null) {
+                    obj.url = a.href.split('#data_type')[0];
+                } else {
+                    obj.url = a.href;
+                }
+                data.push(obj);
+            }
         }
-        data.push(obj);
+        let obj = {};
+        obj.data = data;
+        obj["site_name"] = sbForm.value;
+        chrome.runtime.sendMessage({type: "upload", data: obj}).then((res) => {
+            messageTip(res.data.data.msg, "success");
+            // 跳转到下一页；
+            hrefToNextPage()
+        });
     }
-    chrome.runtime.sendMessage({type: "upload", data}).then((res) => {
-        messageTip(res, "success");
-        // 跳转到下一页；
-        hrefToNextPage()
-    });
 }
 
 const hrefToNextPage = () => {
     let body = document.getElementById("body-iframe").contentWindow.document;
     let nextHref = body.getElementsByClassName("sb_pagN")[0];
     chrome.storage.sync.get("currentPage", (data) => {
-        console.log(data);
         if (data.currentPage) {
             console.log(data.currentPage);
-            // chrome.storage.sync.set({"currentPage": null}, (data) => {
-            // })
             if(parseInt(data.currentPage) >= 4){
                 chrome.storage.sync.set({"currentPage": 0}, (data) => {
                     console.log("上传完毕");

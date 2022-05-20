@@ -47,38 +47,27 @@ const Submit = function ( data, tab_id, sendResponse) {
     }));
 };
 const Upload = function ( data, tab_id, sendResponse) {
-    chrome.cookies.get({name: icp_tools_common_ops.getTokenName(), url: icp_tools_common_ops.buildUrl("/")}, (function (a) {
-        setTimeout(()=> {
-            console.log(data, '数据');
-            sendResponse("提交成功","提交成功",tab_id )
-        }, 3000)
-        if (a && a.value) {//已登录~~
-            let url = icp_tools_common_ops.buildUrl( "/icp/keyword/lib-check"  );
+    chrome.cookies.get({name: icp_tools_common_ops.getTokenName(), url: icp_tools_common_ops.buildUrl("/")}, (function (event) {
+        if (event && event.value) {//已登录~~
+            let url = icp_tools_common_ops.buildUrl( "/icp/keyword/get-multi-url");
             fetch(url, {
                 method: "POST",
                 mode: "cors",
                 headers: {
-                    Authorization: a.value
+                    Authorization: event.value
                 },
                 body: JSON.stringify(data),
             }).then((res) => {
                 if (res.status === 200) {
                     res.text().then((result) => {
-                        let resultData = JSON.parse(result);
-                        if (res.code === 200) {
-                            sendResponse(sendNotice( "提交成功",resultData.msg,tab_id ));
-                        }else{
-                            sendResponse(sendNotice("提交失败","失败原因：" + resultData.msg,tab_id));
-                        }
+                        sendResponse(sendNotice( "提交成功",'',tab_id ));
                     })
                 } else {
                     sendResponse(sendNotice("提交失败","失败原因：" + res.statusText,tab_id));
                 }
             }).catch((err) => {
-                window.confirm(" 提交失败 ,请咨询开发者 ：" + icp_tools_common_ops.buildUrl("/") );
             })
         }else{//未登录~~
-            window.confirm( '请先登录 内部系统\r\n登录地址：' + icp_tools_common_ops.buildUrl("/") );
             chrome.script.create({url:  icp_tools_common_ops.buildUrl("/") });
         }
     }));

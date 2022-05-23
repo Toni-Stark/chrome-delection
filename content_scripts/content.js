@@ -12,12 +12,6 @@ const init = () => {
     }
 };
 
-const sendDataForServer = (e) => {
-    console.log("log---------");
-    console.log(e);
-    console.log("log---------");
-}
-
 // 获取需要提交的数据
 const getDomainName = () => {
     let data = {};
@@ -129,7 +123,7 @@ const uploadListData = () => {
         let sbForm= body.getElementById("sb_form_q");
         let data = [];
         for (let i = 0; i < bAlgoList.length; i ++) {
-            let a = bAlgoList[i].querySelector("a");
+            let a = bAlgoList[i].querySelector("h2>a");
             if (a) {
                 let obj = {};
                 obj.title = a.textContent;
@@ -157,7 +151,6 @@ const hrefToNextPage = () => {
     let nextHref = body.getElementsByClassName("sb_pagN")[0];
     chrome.storage.sync.get("currentPage", (data) => {
         if (data.currentPage) {
-            console.log(data.currentPage);
             if(parseInt(data.currentPage) >= 4){
                 chrome.storage.sync.set({"currentPage": 0}, (data) => {
                     console.log("上传完毕");
@@ -187,9 +180,9 @@ const messageTip = (message, type, time = 2000) => {
             tipCard.style.opacity = "0";
             setTimeout(()=> {
                 tipCard.style.display = "none";
-            }, 2000)
+            }, 3000)
         }, time)
-    }, 5000)
+    }, 3000)
 }
 
 const listenLinkHref = () => {

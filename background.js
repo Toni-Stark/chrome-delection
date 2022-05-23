@@ -66,6 +66,7 @@ const Upload = function ( data, tab_id, sendResponse) {
                     sendResponse(sendNotice("提交失败","失败原因：" + res.statusText,tab_id));
                 }
             }).catch((err) => {
+                sendResponse(sendNotice("提交失败","",tab_id ));
             })
         }else{//未登录~~
             chrome.script.create({url:  icp_tools_common_ops.buildUrl("/") });

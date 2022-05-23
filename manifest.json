@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Keyword Web Reporting Tool",
-  "description": "Search and report web pages",
-  "version": "1.0.0",
+  "name": "关键字审查工具",
+  "description": "关键字审查工具",
+  "version": "1.0.1",
   "options_page": "/options/index.html",
+  "homepage_url": "https://github.com/Toni-Stark/chrome-delection.git",
   "icons": {
     "16": "/images/get_started16.png",
     "32": "/images/get_started32.png",

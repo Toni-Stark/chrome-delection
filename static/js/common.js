@@ -1,6 +1,6 @@
-let icp_tools_common_ops = {
+let icp_tools_ops = {
     init: function () {
-        this.env = "prod";//当前环境，dev（本地开发环境） | inner (内部环境) | prod (生产环境)
+        this.env = "dev";//当前环境，dev（本地开发环境） | inner (内部环境) | prod (生产环境)
         this.flag_pop_auto_upload = "pop_auto_upload_flag"
     },
     getHost:function(){
@@ -24,7 +24,19 @@ let icp_tools_common_ops = {
         }
         return url + _paramUrl
     },
+    openUrl:function( url ){
+        chrome.tabs.create({url:  url });
+    },
     getTokenName:function () {
         return "cms_home_" + this.env;
+    },
+    checkLogin: function (callback) {
+       chrome.cookies.get({name: this.getTokenName(), url: this.buildUrl("/") }, (function (a) {
+            let is_login = false;
+            if (a && a.value) {
+                is_login = true;
+            }
+           callback(a, is_login);
+        }));
     },
 };

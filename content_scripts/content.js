@@ -29,7 +29,14 @@ const submit = async (e) => {
             if (res?.tab_id && res.tab_id > 0) {
                 timer = true;
                 e.style.backgroundColor = "#07b52c"
-                messageTip(res.data.data.msg, "success")
+                if (res.data.code === 200) {
+                    messageTip(res.data.msg, "success")
+                } else if(res.data.code >= 500){
+                    messageTip(res.data.msg, "error")
+                } else {
+                    messageTip(res.data.msg, "warning")
+                }
+
             }
         });
     }
@@ -42,9 +49,7 @@ const setUpload = () => {
         let body = iframe.getElementsByTagName("body");
         let context = createDom({dom: "div", className: "container-modal"});
         let reportTab = createDom({dom: "div", className: "fix-btn-iframe", text: "提交", style: "background: #07b52c", onClick: submit})
-        // let submitTab = createDom({dom: "div", className: "fix-btn-iframe", text: "记录", style: "background: #fb1d1d", onClick: sendDataForServer})
         context.appendChild(reportTab);
-        // context.appendChild(submitTab);
         body[0].appendChild(context)
     })
 }
@@ -74,7 +79,6 @@ const createDom = ({dom, className, style, text, onClick}) => {
  * init: 判断是否从检索页进入详情， 如果是则修改超链接
  */
 const setIframeWindow = ({init}) => {
-
     let iframe = document.createElement("iframe");
     iframe.frameborder = "0";
     iframe.className = "body-iframe";
@@ -85,7 +89,6 @@ const setIframeWindow = ({init}) => {
     document.body.parentNode.style.overflowY= "hidden";
     document.body.parentNode.style.overflowX= "hidden";
     document.querySelectorAll("body")[0].setAttribute("style", "display: none !important");
-    // document.querySelectorAll("html")[0].removeChild(document.querySelectorAll("body")[0]);
     let start = document.createComment("<!--detection_start-->");
     let end = document.createComment("<!--detection_end-->");
     document.querySelectorAll("html")[0].appendChild(start);
@@ -106,7 +109,7 @@ const setIframeWindow = ({init}) => {
 
 const uploadListGet = () => {
     document.getElementById("body-iframe").addEventListener("load", function(event) {
-        chrome.storage.sync.get(icp_tools_common_ops.flag_pop_auto_upload, (data) => {
+        chrome.storage.sync.get(icp_tools_ops.flag_pop_auto_upload, (data) => {
             let {pop_auto_upload_flag} = data
             if (pop_auto_upload_flag === "1") {
                 uploadListData()
@@ -139,21 +142,26 @@ const uploadListData = () => {
         obj.data = data;
         obj["site_name"] = sbForm.value;
         chrome.runtime.sendMessage({type: "upload", data: obj}).then((res) => {
-            messageTip(res.data.data.msg, "success");
+            hrefToNextPage(res)
             // 跳转到下一页；
-            hrefToNextPage()
         });
     }
 }
 
-const hrefToNextPage = () => {
+const hrefToNextPage = (res) => {
     let body = document.getElementById("body-iframe").contentWindow.document;
     let nextHref = body.getElementsByClassName("sb_pagN")[0];
     chrome.storage.sync.get("currentPage", (data) => {
         if (data.currentPage) {
             if(parseInt(data.currentPage) >= 4){
                 chrome.storage.sync.set({"currentPage": 0}, (data) => {
-                    console.log("上传完毕");
+                    if (res?.tab_id && res.tab_id > 0) {
+                        if (res.data.code >= 500) {
+                            messageTip(res.data.msg, "error")
+                        } else {
+                            messageTip("提交完毕", "success")
+                        }
+                    }
                 })
             } else {
                 chrome.storage.sync.set({"currentPage": parseInt(data.currentPage)+1}, (data) => {
@@ -169,7 +177,7 @@ const hrefToNextPage = () => {
 }
 
 let timerTip = null;
-const messageTip = (message, type, time = 2000) => {
+const messageTip = (message, type) => {
     clearTimeout(timerTip);
     timerTip = setTimeout(() => {
         let html = document.getElementById("body-iframe").contentWindow.document;
@@ -180,9 +188,9 @@ const messageTip = (message, type, time = 2000) => {
             tipCard.style.opacity = "0";
             setTimeout(()=> {
                 tipCard.style.display = "none";
-            }, 3000)
-        }, time)
-    }, 3000)
+            }, 6000)
+        }, 5000)
+    }, 1500)
 }
 
 const listenLinkHref = () => {
@@ -237,15 +245,16 @@ const closeModal = () => {
  * 页面开启逻辑
  */
 $(document).ready(function () {
-    icp_tools_common_ops.init();
+    icp_tools_ops.init();
     setTimeout(()=> {
         init()
-    }, 2000)
+    }, 1000)
 });
 
 const styles = {
     tip:
-        "width: 300px;"+
+        "min-width: 300px;"+
+        "padding: 0 10px;"+
         "position: fixed;"+
         "top: 40px;"+
         "transition:margin-top 2s;"+

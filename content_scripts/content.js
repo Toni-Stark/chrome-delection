@@ -1,4 +1,3 @@
-import("../static/js/common");
 const init = () => {
     let iframe = document.getElementById("body-iframe");
     if(iframe === null && window.self === window.top){
@@ -32,7 +31,14 @@ const submit = async (e) => {
                 if (res.data.code === 200) {
                     messageTip(res.data.msg, "success")
                 } else if(res.data.code >= 500){
-                    messageTip(res.data.msg, "error")
+                    if (res.data.code === 700) {
+                        messageTip(res.data.msg, "error");
+                        setTimeout(()=> {
+                            window.open("http://www.dev.cms.cn//home/user/login?from=ctbox", "_blank");
+                        },4000)
+                    } else {
+                        messageTip(res.data.msg, "error")
+                    }
                 } else {
                     messageTip(res.data.msg, "warning")
                 }
@@ -157,7 +163,14 @@ const hrefToNextPage = (res) => {
                 chrome.storage.sync.set({"currentPage": 0}, (data) => {
                     if (res?.tab_id && res.tab_id > 0) {
                         if (res.data.code >= 500) {
-                            messageTip(res.data.msg, "error")
+                            if (res.data.code === 700) {
+                                messageTip(res.data.msg, "error");
+                                setTimeout(()=>{
+                                    window.open("http://www.dev.cms.cn//home/user/login?from=ctbox", "_blank");
+                                },4000);
+                            } else {
+                                messageTip(res.data.msg, "error")
+                            }
                         } else {
                             messageTip("提交完毕", "success")
                         }

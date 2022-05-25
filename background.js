@@ -23,7 +23,6 @@ const FetchApi = ({url, method, token, data, sendResponse, tab_id}) => {
         body: JSON.stringify(data),
     }
     fetch(url, option).then((res) => {
-        console.log(res, "res");
         switch (res.status) {
             case 200:
                 res.text().then((result) => {
@@ -48,8 +47,7 @@ const Submit = function ( data, tab_id, sendResponse) {
             let url = icp_tools_ops.buildUrl( "/icp/keyword/lib-check");
             FetchApi({url,method: "POST",token:storage.value,data, tab_id, sendResponse})
         } else {
-            window.confirm( '请先登录 内部系统\r\n登录地址：' + icp_tools_ops.buildUrl("/") );
-            chrome.script.create({url:  icp_tools_ops.buildUrl("/") });
+            sendResponse({data: {code: 700, msg: '请先登录 内部系统\r\n登录地址：' + icp_tools_ops.buildUrl("/")}, tab_id});
         }
     });
 
@@ -60,8 +58,7 @@ const Upload = function ( data, tab_id, sendResponse) {
             let url = icp_tools_ops.buildUrl("/icp/keyword/get-multi-url");
             FetchApi({url,method: "POST",token:storage.value,data, tab_id, sendResponse})
         } else {
-            window.confirm( '请先登录 内部系统\r\n登录地址：' + icp_tools_ops.buildUrl("/") );
-            chrome.script.create({url:  icp_tools_ops.buildUrl("/") });
+            sendResponse({data: {code: 700, msg: '请先登录 内部系统\r\n登录地址：' + icp_tools_ops.buildUrl("/")}, tab_id});
         }
     })
 };
